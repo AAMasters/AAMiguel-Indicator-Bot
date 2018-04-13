@@ -1,4 +1,4 @@
-﻿exports.newUserBot = function newUserBot(BOT, COMMONS, UTILITIES, DEBUG_MODULE, FILE_STORAGE, BLOB_STORAGE) {
+﻿exports.newUserBot = function newUserBot(BOT, COMMONS, UTILITIES, DEBUG_MODULE, BLOB_STORAGE, FILE_STORAGE) {
 
     const FULL_LOG = true;
     const LOG_FILE_CONTENT = false;
@@ -27,7 +27,7 @@
     };
 
     let charlyFileStorage = FILE_STORAGE.newFileStorage(bot);
-    let mastersBlobStorage = BLOB_STORAGE.newFileStorage(bot);
+    let charlyBlobStorage = BLOB_STORAGE.newBlobStorage(bot);
 
     let utilities = UTILITIES.newUtilities(bot);
 
@@ -55,7 +55,7 @@
 
             dependencies = pDependencies;
 
-            commons.initializeStorage(charlyFileStorage, mastersBlobStorage, onInizialized);
+            commons.initializeStorage(charlyFileStorage, charlyBlobStorage, onInizialized);
 
             function onInizialized(err) {
 
@@ -479,7 +479,7 @@
 
                                             let trades = JSON.parse(text);
 
-                                            mastersBlobStorage.createTextFile(filePath, fileName, text, onFileCreated);
+                                            charlyBlobStorage.createTextFile(filePath, fileName, text, onFileCreated);
 
                                             function onFileCreated(err) {
 

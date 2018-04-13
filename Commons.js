@@ -22,7 +22,7 @@
 
     return thisObject;
 
-    function initializeStorage(charlyFileStorage, mastersBlobStorage, callBackFunction) {
+    function initializeStorage(charlyFileStorage, charlyBlobStorage, callBackFunction) {
 
         try {
 
@@ -32,7 +32,7 @@
 
             function initializeCharlyBlobStorage() {
 
-                mastersBlobStorage.initialize("AAMasters", onCharlyInizialized);
+                charlyBlobStorage.initialize({ bot: "AACharly", devTeam: "AAMasters" }, onCharlyInizialized);
 
                 function onCharlyInizialized(err) {
 
