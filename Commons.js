@@ -22,7 +22,7 @@
 
     return thisObject;
 
-    function initializeStorage(charlyFileStorage, charlyBlobStorage, callBackFunction) {
+    function initializeStorage(charlyFileStorage, mastersBlobStorage, callBackFunction) {
 
         try {
 
@@ -32,16 +32,16 @@
 
             function initializeCharlyBlobStorage() {
 
-                charlyBlobStorage.initialize("AABruce", onBruceInizialized);
+                mastersBlobStorage.initialize("AAMasters", onCharlyInizialized);
 
-                function onBruceInizialized(err) {
+                function onCharlyInizialized(err) {
 
                     if (err.result === global.DEFAULT_OK_RESPONSE.result) {
 
                         initializeCharlyFileStorage();
 
                     } else {
-                        logger.write("[ERROR] initializeStorage -> initializeCharlyBlobStorage -> onBruceInizialized -> err = " + err.message);
+                        logger.write("[ERROR] initializeStorage -> initializeCharlyBlobStorage -> onCharlyInizialized -> err = " + err.message);
                         callBackFunction(err);
                     }
                 }

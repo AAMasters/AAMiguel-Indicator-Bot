@@ -1,0 +1,71 @@
+{
+  "displayName": "Miguel",
+  "codeName": "AAMiguel",
+  "type": "Indicator",
+  "version": {
+    "major": 1,
+    "minor": 0,
+    "patch": 0
+  },
+  "devTeam": "AAMasters",
+  "dataSetVersion": "dataSet.V1",
+  "processes": [
+    {
+      "name": "Trades-Files-To-Blobs",
+      "description": "Migrates Trades Files to Blobs",
+      "startMode": {
+        "allMonths": {
+          "run": "false",
+          "minYear": "2014",
+          "maxYear": "2018"
+        },
+        "oneMonth": {
+          "run": "true",
+          "year": "2018",
+          "month": "1"
+        },
+        "noTime": {
+          "run": "false"
+        }
+      },
+      "normalWaitTime": 60000,
+      "retryWaitTime": 10000,
+      "sleepWaitTime": 3600000,
+      "comaWaitTime": 86400000,
+      "dependencies": [
+        {
+          "devTeam": "AAMasters",
+          "bot": "AACharly",
+          "botVersion": {
+            "major": 1,
+            "minor": 0
+          },
+          "process": "Poloniex-Historic-Trades",
+          "dataSetVersion": "dataSet.V1"
+        },
+        {
+          "devTeam": "AAMasters",
+          "bot": "AACharly",
+          "botVersion": {
+            "major": 1,
+            "minor": 0
+          },
+          "process": "Poloniex-Hole-Fixing",
+          "dataSetVersion": "dataSet.V1",
+          "dataSetSection": "Month"
+        },
+        {
+          "devTeam": "AAMasters",
+          "bot": "AAMiguel",
+          "botVersion": {
+            "major": 1,
+            "minor": 0
+          },
+          "process": "Trades-Files-To-Blobs",
+          "dataSetVersion": "dataSet.V1",
+          "dataSetSection": "Month"
+        }
+      ]
+    }
+  ]
+}

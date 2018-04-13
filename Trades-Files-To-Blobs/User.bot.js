@@ -15,12 +15,6 @@
 
     const TRADES_FOLDER_NAME = "Trades";
 
-    const CANDLES_FOLDER_NAME = "Candles";
-    const CANDLES_ONE_MIN = "One-Min";
-
-    const VOLUMES_FOLDER_NAME = "Volumes";
-    const VOLUMES_ONE_MIN = "One-Min";
-
     const logger = DEBUG_MODULE.newDebugLog();
     logger.fileName = MODULE_NAME;
     logger.bot = bot;
@@ -33,7 +27,7 @@
     };
 
     let charlyFileStorage = FILE_STORAGE.newFileStorage(bot);
-    let charlyBlobStorage = BLOB_STORAGE.newFileStorage(bot);
+    let mastersBlobStorage = BLOB_STORAGE.newFileStorage(bot);
 
     let utilities = UTILITIES.newUtilities(bot);
 
@@ -61,7 +55,7 @@
 
             dependencies = pDependencies;
 
-            commons.initializeStorage(charlyFileStorage, charlyBlobStorage, onInizialized);
+            commons.initializeStorage(charlyFileStorage, mastersBlobStorage, onInizialized);
 
             function onInizialized(err) {
 
@@ -121,14 +115,11 @@
                 atHeadOfMarket = false;
             }
 
-            let nextIntervalExecution = false; // This tell weather the Interval module will be executed again or not. By default it will not unless some hole have been found in the current execution.
-
             let market = global.MARKET;
 
             let lastProcessDay;         // Datetime of the last file certified by the Hole Fixing process as without permanent holes.
             let firstTradeFile;         // Datetime of the first trade file in the whole market history.
             let lastFileWithoutHoles;   // Datetime of the last verified file without holes.
-            let lastCandleClose;        // Value of the last candle close.
             let lastTradeFile;          // Datetime pointing to the last Trade File sucessfuly processed and included in the last file.
 
             getContextVariables();
@@ -256,7 +247,7 @@
 
                      /* Final Status Report */
 
-                    reportKey = "AAMasters" + "-" + "AABruce" + "-" + "One-Min-Daily-Candles-Volumes" + "-" + "dataSet.V1" + "-" + year + "-" + month;
+                    reportKey = "AAMasters" + "-" + "AAMiguel" + "-" + "Trades-Files-To-Blobs" + "-" + "dataSet.V1" + "-" + year + "-" + month;
                     if (FULL_LOG === true) { logger.write("[INFO] start -> getContextVariables -> reportKey = " + reportKey); }
 
                     if (dependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
@@ -291,7 +282,6 @@
                     } else {
 
                         lastProcessDay = new Date(thisReport.lastFile.year + "-" + thisReport.lastFile.month + "-" + thisReport.lastFile.days + " " + "00:00" + GMT_SECONDS);
-                        lastCandleClose = thisReport.candleClose;
 
                         if (thisReport.fileComplete === true) {
 
@@ -351,13 +341,28 @@
 
                                     if (date.getUTCDate() !== lastProcessDay.getUTCDate()) {
 
-                                        writeFiles(lastProcessDay, candles, volumes, true, onFilesWritten);
-
+                                        writeStatusReport(lastProcessDay, lastTradeFile, false, onStatusReportWritten);
                                         return;
 
-                                        function onFilesWritten() {
+                                        function onStatusReportWritten(err) {
 
-                                            nextDay();
+                                            try {
+                                                if (FULL_LOG === true) { logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> onStatusReportWritten -> Entering function."); }
+
+                                                if (err.result !== global.DEFAULT_OK_RESPONSE.result) {
+                                                    logger.write("[ERROR] start -> migrateData -> nextDay -> nextMinute -> onStatusReportWritten -> err = " + err.message);
+                                                    callBackFunction(err);
+                                                    return;
+                                                }
+
+                                                nextDay();
+
+                                                return;
+                                            } catch (err) {
+                                                logger.write("[ERROR] start -> migrateData -> nextDay -> nextMinute -> onStatusReportWritten -> err = " + err.message);
+                                                callBackFunction(global.DEFAULT_FAIL_RESPONSE);
+                                                return;
+                                            }
                                         }
                                     }
 
@@ -369,7 +374,7 @@
 
                                         lastProcessDay = new Date(lastProcessDay.valueOf() - ONE_DAY_IN_MILISECONDS);
 
-                                        writeStatusReport(lastProcessDay, lastTradeFile, lastCandleClose, true, true, onStatusReportWritten);
+                                        writeStatusReport(lastProcessDay, lastTradeFile, true, onStatusReportWritten);
                                         return;
 
                                         function onStatusReportWritten(err) {
@@ -403,16 +408,32 @@
 
                                     if (date.valueOf() > lastFileWithoutHoles.valueOf()) {
 
-                                        writeFiles(lastProcessDay, candles, volumes, false, onFilesWritten);
+                                        writeStatusReport(lastProcessDay, lastTradeFile, false, onStatusReportWritten);
                                         return;
 
-                                        function onFilesWritten() {
+                                        function onStatusReportWritten(err) {
 
-                                            if (FULL_LOG === true) {
-                                                logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> Head of the market reached for market " + market.assetA + '_' + market.assetB + "."); }
+                                            try {
+                                                if (FULL_LOG === true) { logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> onStatusReportWritten -> Entering function."); }
 
-                                            callBackFunction(global.DEFAULT_OK_RESPONSE);
-                                            return;
+                                                if (err.result !== global.DEFAULT_OK_RESPONSE.result) {
+                                                    logger.write("[ERROR] start -> migrateData -> nextDay -> nextMinute -> onStatusReportWritten -> err = " + err.message);
+                                                    callBackFunction(err);
+                                                    return;
+                                                }
+
+                                                if (FULL_LOG === true) {
+                                                    logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> Head of the market reached for market " + market.assetA + '_' + market.assetB + ".");
+                                                }
+
+                                                callBackFunction(global.DEFAULT_OK_RESPONSE);
+                                                return;
+
+                                            } catch (err) {
+                                                logger.write("[ERROR] start -> migrateData -> nextDay -> nextMinute -> onStatusReportWritten -> err = " + err.message);
+                                                callBackFunction(global.DEFAULT_FAIL_RESPONSE);
+                                                return;
+                                            }
                                         }
                                     }
 
@@ -456,7 +477,9 @@
                                                 logger.write("[INFO] start -> migrateData -> nextDay -> readTrades -> onFileReceived ->  text = " + text);
                                             }
 
-                                            charlyFileStorage.createTextFile(filePath, fileName, text, onFileCreated);
+                                            let trades = JSON.parse(text);
+
+                                            mastersBlobStorage.createTextFile(filePath, fileName, text, onFileCreated);
 
                                             function onFileCreated(err) {
 
@@ -474,9 +497,9 @@
                                                         logger.write("[INFO] start -> migrateData -> nextDay -> readTrades -> onFileReceived -> onFileCreated -> fileContent = " + fileContent);
                                                     }
 
-                                                    logger.write("[INFO] start -> migrateData -> nextDay -> readTrades -> onFileReceived -> onFileCreated -> Finished with File @ " + market.assetA + "_" + market.assetB + ", " + fileRecordCounter + " records inserted into " + filePath + "/" + fileName + "");
+                                                    logger.write("[INFO] start -> migrateData -> nextDay -> readTrades -> onFileReceived -> onFileCreated -> " + trades.length + " records inserted in File " + filePath + "/" + fileName + "");
 
-                                                    writeVolumes();
+                                                    nextMinute();
 
                                                 } catch (err) {
                                                     logger.write("[ERROR] start -> migrateData -> nextDay -> readTrades -> onFileReceived -> onFileCreated -> err = " + err.message);
