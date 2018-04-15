@@ -21,8 +21,8 @@
         },
         "oneMonth": {
           "run": "true",
-          "year": "2018",
-          "month": "1"
+          "year": "2015",
+          "month": "2"
         },
         "noTime": {
           "run": "false"
@@ -32,7 +32,7 @@
       "retryWaitTime": 10000,
       "sleepWaitTime": 3600000,
       "comaWaitTime": 86400000,
-      "dependencies": [
+      "statusDependencies": [
         {
           "devTeam": "AAMasters",
           "bot": "AACharly",

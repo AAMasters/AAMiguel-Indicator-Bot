@@ -34,26 +34,24 @@
     let year;
     let month;
 
-    let dependencies;
+    let statusDependencies;
 
     return thisObject;
 
-    function initialize(pDependencies, pMonth, pYear, callBackFunction) {
+    function initialize(pStatusDependencies, pMonth, pYear, callBackFunction) {
 
         try {
 
             year = pYear;
             month = pMonth;
             month = utilities.pad(month, 2); // Adding a left zero when needed.
-            dependencies = pDependencies;
+            statusDependencies = pStatusDependencies;
 
             logger.fileName = MODULE_NAME + "-" + year + "-" + month;
 
             if (FULL_LOG === true) { logger.write("[INFO] initialize -> Entering function."); }
             if (FULL_LOG === true) { logger.write("[INFO] initialize -> pYear = " + year); }
             if (FULL_LOG === true) { logger.write("[INFO] initialize -> pMonth = " + month); }
-
-            dependencies = pDependencies;
 
             commons.initializeStorage(charlyFileStorage, charlyBlobStorage, onInizialized);
 
@@ -138,13 +136,13 @@
                     reportKey = "AAMasters" + "-" + "AACharly" + "-" + "Poloniex-Historic-Trades" + "-" + "dataSet.V1";
                     if (FULL_LOG === true) { logger.write("[INFO] start -> getContextVariables -> reportKey = " + reportKey); }
 
-                    if (dependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
+                    if (statusDependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
                         logger.write("[ERROR] start -> getContextVariables -> Can not continue because dependecy Status Report is corrupt. ");
                         callBackFunction(global.DEFAULT_RETRY_RESPONSE);
                         return;
                     }
 
-                    thisReport = dependencies.statusReports.get(reportKey).file;
+                    thisReport = statusDependencies.statusReports.get(reportKey).file;
 
                     if (thisReport.lastFile === undefined) {
                         logger.write("[WARN] start -> getContextVariables -> Undefined Last File. -> reportKey = " + reportKey);
@@ -197,13 +195,13 @@
                     reportKey = "AAMasters" + "-" + "AACharly" + "-" + "Poloniex-Hole-Fixing" + "-" + "dataSet.V1" + "-" + year + "-" + month; 
                     if (FULL_LOG === true) { logger.write("[INFO] start -> getContextVariables -> reportKey = " + reportKey); }
 
-                    if (dependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
+                    if (statusDependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
                         logger.write("[ERROR] start -> getContextVariables -> Can not continue because dependecy Status Report is corrupt. ");
                         callBackFunction(global.DEFAULT_RETRY_RESPONSE);
                         return;
                     }
 
-                    thisReport = dependencies.statusReports.get(reportKey).file;
+                    thisReport = statusDependencies.statusReports.get(reportKey).file;
 
                     if (thisReport.lastFile === undefined) {
                         logger.write("[WARN] start -> getContextVariables -> Undefined Last File. -> reportKey = " + reportKey);
@@ -250,13 +248,13 @@
                     reportKey = "AAMasters" + "-" + "AAMiguel" + "-" + "Trades-Files-To-Blobs" + "-" + "dataSet.V1" + "-" + year + "-" + month;
                     if (FULL_LOG === true) { logger.write("[INFO] start -> getContextVariables -> reportKey = " + reportKey); }
 
-                    if (dependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
+                    if (statusDependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
                         logger.write("[ERROR] start -> getContextVariables -> Can not continue because self dependecy Status Report is corrupt. Aborting Process.");
                         callBackFunction(global.DEFAULT_FAIL_RESPONSE);
                         return;
                     }
 
-                    thisReport = dependencies.statusReports.get(reportKey).file;
+                    thisReport = statusDependencies.statusReports.get(reportKey).file;
 
                     if (thisReport.lastFile === undefined) {
                         logger.write("[WARN] start -> getContextVariables -> Undefined Last File. -> reportKey = " + reportKey);
@@ -283,7 +281,7 @@
 
                         lastProcessDay = new Date(thisReport.lastFile.year + "-" + thisReport.lastFile.month + "-" + thisReport.lastFile.days + " " + "00:00" + GMT_SECONDS);
 
-                        if (thisReport.fileComplete === true) {
+                        if (thisReport.lastTradeFile === undefined) {
 
                             migrateData();
 
@@ -297,8 +295,8 @@
                 } catch (err) {
                     logger.write("[ERROR] start -> getContextVariables -> err = " + err.message);
                     if (err.message === "Cannot read property 'file' of undefined") {
-                        logger.write("[HINT] start -> getContextVariables -> Check the bot configuration to see if all of its dependencies declarations are correct. ");
-                        logger.write("[HINT] start -> getContextVariables -> Dependencies loaded -> keys = " + JSON.stringify(dependencies.keys));
+                        logger.write("[HINT] start -> getContextVariables -> Check the bot configuration to see if all of its statusDependencies declarations are correct. ");
+                        logger.write("[HINT] start -> getContextVariables -> Dependencies loaded -> keys = " + JSON.stringify(statusDependencies.keys));
                     }
                     callBackFunction(global.DEFAULT_FAIL_RESPONSE);
                 }
@@ -318,6 +316,8 @@
 
                             lastProcessDay = new Date(lastProcessDay.valueOf() + ONE_DAY_IN_MILISECONDS);
 
+                            if (FULL_LOG === true) { logger.write("[INFO] start -> migrateData -> nextDay -> lastProcessDay = " + lastProcessDay); }
+
                             let date = new Date(lastProcessDay.valueOf() - 60 * 1000);
 
                             if (date.valueOf() < firstTradeFile.valueOf()) {  // At the special case where we are at the begining of the market, this might be true.
@@ -326,7 +326,7 @@
 
                             if (lastTradeFile !== undefined) {
                                 date = new Date(lastTradeFile.valueOf());
-                            }
+                            } 
 
                             nextMinute();
 
@@ -337,9 +337,13 @@
 
                                     date = new Date(date.valueOf() + 60 * 1000);
 
+                                    if (FULL_LOG === true) { logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> date = " + date); }
+
                                     /* Check if we are outside the current Day / File */
 
                                     if (date.getUTCDate() !== lastProcessDay.getUTCDate()) {
+
+                                        if (FULL_LOG === true) { logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> Outside the Current Day."); }
 
                                         writeStatusReport(lastProcessDay, lastTradeFile, false, onStatusReportWritten);
                                         return;
@@ -407,6 +411,8 @@
                                     /* Check if we have past the most recent hole fixed file */
 
                                     if (date.valueOf() > lastFileWithoutHoles.valueOf()) {
+
+                                        if (FULL_LOG === true) { logger.write("[INFO] start -> migrateData -> nextDay -> nextMinute -> Head of the Market Reached."); }
 
                                         writeStatusReport(lastProcessDay, lastTradeFile, false, onStatusReportWritten);
                                         return;
@@ -545,7 +551,7 @@
                 try {
 
                     let key = bot.devTeam + "-" + bot.codeName + "-" + bot.process + "-" + bot.dataSetVersion + "-" + year + "-" + month;
-                    let statusReport = dependencies.statusReports.get(key);
+                    let statusReport = statusDependencies.statusReports.get(key);
 
                     statusReport.file = {
                         lastFile: {
@@ -553,15 +559,20 @@
                             month: (lastFileDate.getUTCMonth() + 1),
                             days: lastFileDate.getUTCDate()
                         },
-                        lastTradeFile: {
+                        monthCompleted: isMonthComplete
+                    };
+
+                    if (lastTradeFile !== undefined) {
+
+                        statusReport.file.lastTradeFile = {
                             year: lastTradeFile.getUTCFullYear(),
                             month: (lastTradeFile.getUTCMonth() + 1),
                             days: lastTradeFile.getUTCDate(),
                             hours: lastTradeFile.getUTCHours(),
                             minutes: lastTradeFile.getUTCMinutes()
-                        },
-                        monthCompleted: isMonthComplete
-                    };
+                        };
+
+                    }
 
                     let fileContent = JSON.stringify(statusReport); 
 
