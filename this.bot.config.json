@@ -26,6 +26,10 @@
         },
         "noTime": {
           "run": "false"
+        },
+        "fixedInterval": {
+          "run": "false",
+          "interval": 0
         }
       },
       "normalWaitTime": 60000,
