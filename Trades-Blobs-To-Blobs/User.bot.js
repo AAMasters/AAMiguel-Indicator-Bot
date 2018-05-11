@@ -26,8 +26,8 @@
         start: start
     };
 
-    let charlyFileStorage = FILE_STORAGE.newFileStorage(bot);
-    let charlyBlobStorage = BLOB_STORAGE.newBlobStorage(bot);
+    let charlyOriginStorage = BLOB_STORAGE.newBlobStorage(bot);
+    let charlyDestinationStorage = BLOB_STORAGE.newBlobStorage(bot);
 
     let utilities = UTILITIES.newUtilities(bot);
 
@@ -53,7 +53,7 @@
             if (FULL_LOG === true) { logger.write("[INFO] initialize -> pYear = " + year); }
             if (FULL_LOG === true) { logger.write("[INFO] initialize -> pMonth = " + month); }
 
-            commons.initializeStorage(charlyFileStorage, charlyBlobStorage, onInizialized);
+            commons.initializeStorage(charlyOriginStorage, charlyDestinationStorage, onInizialized);
 
             function onInizialized(err) {
 
@@ -245,7 +245,7 @@
 
                      /* Final Status Report */
 
-                    reportKey = "AAMasters" + "-" + "AAMiguel" + "-" + "Trades-Files-To-Blobs" + "-" + "dataSet.V1" + "-" + year + "-" + month;
+                    reportKey = "AAMasters" + "-" + "AAMiguel" + "-" + "Trades-Blobs-To-Blobs" + "-" + "dataSet.V1" + "-" + year + "-" + month;
                     if (FULL_LOG === true) { logger.write("[INFO] start -> getContextVariables -> reportKey = " + reportKey); }
 
                     if (statusDependencies.statusReports.get(reportKey).status === "Status Report is corrupt.") {
@@ -463,7 +463,7 @@
                                     let filePathRoot = bot.devTeam + "/" + "AACharly" + "." + bot.version.major + "." + bot.version.minor + "/" + global.PLATFORM_CONFIG.codeName + "." + global.PLATFORM_CONFIG.version.major + "." + global.PLATFORM_CONFIG.version.minor + "/" + global.EXCHANGE_NAME + "/" + bot.dataSetVersion;
                                     let filePath = filePathRoot + "/Output/" + TRADES_FOLDER_NAME + '/' + dateForPath;
 
-                                    charlyFileStorage.getTextFile(filePath, fileName, onFileReceived);
+                                    charlyOriginStorage.getTextFile(filePath, fileName, onFileReceived);
 
                                     function onFileReceived(err, text) {
 
@@ -485,7 +485,7 @@
 
                                             let trades = JSON.parse(text);
 
-                                            charlyBlobStorage.createTextFile(filePath, fileName, text, onFileCreated);
+                                            charlyDestinationStorage.createTextFile(filePath, fileName, text, onFileCreated);
 
                                             function onFileCreated(err) {
 

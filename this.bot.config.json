@@ -11,18 +11,18 @@
   "dataSetVersion": "dataSet.V1",
   "processes": [
     {
-      "name": "Trades-Files-To-Blobs",
-      "description": "Migrates Trades Files to Blobs",
+      "name": "Trades-Blobs-To-Blobs",
+      "description": "Migrates Trades Blobs to Blobs",
       "startMode": {
         "allMonths": {
-          "run": "false",
+          "run": "true",
           "minYear": "2014",
           "maxYear": "2018"
         },
         "oneMonth": {
-          "run": "true",
-          "year": "2015",
-          "month": "2"
+          "run": "false",
+          "year": "2018",
+          "month": "5"
         },
         "noTime": {
           "run": "false"
@@ -65,7 +65,7 @@
             "major": 1,
             "minor": 0
           },
-          "process": "Trades-Files-To-Blobs",
+          "process": "Trades-Blobs-To-Blobs",
           "dataSetVersion": "dataSet.V1",
           "dataSetSection": "Month"
         }

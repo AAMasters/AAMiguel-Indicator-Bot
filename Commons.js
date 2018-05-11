@@ -20,36 +20,47 @@
 
     let utilities = UTILITIES.newUtilities(bot);
 
+    let origin = {
+        devTeam: "AAMasters",
+        bot: "AACharly"
+    };
+
+    let destination = {
+        ambient: "Development",
+        devTeam: "AAMasters",
+        bot: "AACharly"
+    };
+
     return thisObject;
 
-    function initializeStorage(charlyFileStorage, charlyBlobStorage, callBackFunction) {
+    function initializeStorage(charlyOriginStorage, charlyDestinationStorage, callBackFunction) {
 
         try {
 
             if (FULL_LOG === true) { logger.write("[INFO] initializeStorage -> Entering function."); }
 
-            initializeCharlyBlobStorage();
+            initializeCharlyOriginStorage();
 
-            function initializeCharlyBlobStorage() {
+            function initializeCharlyOriginStorage() {
 
-                charlyBlobStorage.initialize({ bot: "AACharly", devTeam: "AAMasters" }, onCharlyInizialized);
+                charlyOriginStorage.initialize(undefined, onCharlyInizialized);
 
                 function onCharlyInizialized(err) {
 
                     if (err.result === global.DEFAULT_OK_RESPONSE.result) {
 
-                        initializeCharlyFileStorage();
+                        initializeCharlyDestinationStorage();
 
                     } else {
-                        logger.write("[ERROR] initializeStorage -> initializeCharlyBlobStorage -> onCharlyInizialized -> err = " + err.message);
+                        logger.write("[ERROR] initializeStorage -> initializeCharlyOriginStorage -> onCharlyInizialized -> err = " + err.message);
                         callBackFunction(err);
                     }
                 }
             }
 
-            function initializeCharlyFileStorage() {
+            function initializeCharlyDestinationStorage() {
 
-                charlyFileStorage.initialize("AACharly", onCharlyInizialized);
+                charlyDestinationStorage.initialize(destination, onCharlyInizialized);
 
                 function onCharlyInizialized(err) {
 
@@ -58,7 +69,7 @@
                         callBackFunction(global.DEFAULT_OK_RESPONSE);
 
                     } else {
-                        logger.write("[ERROR] initializeStorage -> initializeCharlyFileStorage -> onCharlyInizialized -> err = " + err.message);
+                        logger.write("[ERROR] initializeStorage -> initializeCharlyDestinationStorage -> onCharlyInizialized -> err = " + err.message);
                         callBackFunction(err);
                     }
                 }
