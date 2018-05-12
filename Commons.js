@@ -26,7 +26,7 @@
     };
 
     let destination = {
-        ambient: "Development",
+        ambient: "Production",
         devTeam: "AAMasters",
         bot: "AACharly"
     };

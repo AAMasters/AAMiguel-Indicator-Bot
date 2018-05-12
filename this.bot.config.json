@@ -16,7 +16,7 @@
       "startMode": {
         "allMonths": {
           "run": "true",
-          "minYear": "2014",
+          "minYear": "2015",
           "maxYear": "2018"
         },
         "oneMonth": {
